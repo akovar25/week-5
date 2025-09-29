@@ -1,5 +1,6 @@
 import plotly.express as px
 import pandas as pd
+import numpy as np
 
 # update/add code below ...
 df = pd.read_csv('https://raw.githubusercontent.com/leontoddjohnson/datasets/main/data/titanic.csv')
@@ -8,15 +9,31 @@ def survival_demographics():
     # Use the global df loaded in cell 2
     age_bins = [0, 12, 19, 59, float('inf')]
     age_labels = ['Child', 'Teen', 'Adult', 'Senior']
+    # create categorical age groups with explicit categories so groupby can include empty groups
     df['age_group'] = pd.cut(df['Age'], bins=age_bins, labels=age_labels, right=True)
-    df['age_group'] = df['age_group'].astype('category')
+    df['age_group'] = df['age_group'].astype(pd.CategoricalDtype(categories=age_labels, ordered=True))
 
-    grouped = df.groupby(['Pclass', 'Sex', 'age_group'])
+    # ensure Pclass and Sex are categorical with expected categories so all combinations appear
+    df['Pclass'] = df['Pclass'].astype(pd.CategoricalDtype(categories=[1, 2, 3], ordered=True))
+    df['Sex'] = df['Sex'].astype(pd.CategoricalDtype(categories=['male', 'female']))
+
+    # pass observed=False to include category combinations that have no members
+    grouped = df.groupby(['Pclass', 'Sex', 'age_group'], observed=False)
     summary = grouped.agg(
         n_passengers=('PassengerId', 'count'),
         n_survivors=('Survived', 'sum')
     ).reset_index()
-    summary['survival_rate'] = summary['n_survivors'] / summary['n_passengers']
+    # fill missing groups (resulting from categorical combinations) with zeros
+    summary['n_passengers'] = summary['n_passengers'].fillna(0).astype(int)
+    # n_survivors might be float after aggregation; fillna and cast to int
+    summary['n_survivors'] = summary['n_survivors'].fillna(0).astype(int)
+
+    # safe division: if n_passengers is 0 set survival_rate to 0
+    summary['survival_rate'] = np.where(
+        summary['n_passengers'] > 0,
+        summary['n_survivors'] / summary['n_passengers'],
+        0.0
+    )
     summary = summary.sort_values(by=['Pclass', 'Sex', 'age_group']).reset_index(drop=True)
     return summary
 
