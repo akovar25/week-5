@@ -15,7 +15,7 @@ st.write(
 fig1 = visualize_demographic()
 st.plotly_chart(fig1, use_container_width=True)
 
-st.write(
+st.write("Did adult women in first class have a higher survival rate than any other demographic group?")
 '''
 # Titanic Visualization 2
 '''
