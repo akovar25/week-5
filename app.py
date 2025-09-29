@@ -24,7 +24,7 @@ st.write("Did adult women in first class have a higher survival rate than any ot
 fig2 = visualize_families()
 st.plotly_chart(fig2, use_container_width=True)
 
-st.write(
+st.write("Do larger families in third class tend to pay lower fares per person compared to smaller families in first class?")
 '''
 # Titanic Visualization Bonus
 '''
