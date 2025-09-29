@@ -76,8 +76,12 @@ def family_groups():
     # Calculate family size
     df['family_size'] = df['SibSp'] + df['Parch'] + 1
 
-    # Group by family size and class
-    grouped = df.groupby(['family_size', 'pclass'])
+    # ensure pclass is categorical so grouping behavior is consistent
+    if 'pclass' in df.columns:
+        df['pclass'] = df['pclass'].astype(pd.CategoricalDtype(categories=[1, 2, 3], ordered=True))
+
+    # Group by family size and class; pass observed=False to retain current behavior
+    grouped = df.groupby(['family_size', 'pclass'], observed=False)
 
     # Aggregate statistics
     summary = grouped.agg(
