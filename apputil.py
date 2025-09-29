@@ -8,8 +8,18 @@ df = pd.read_csv('https://raw.githubusercontent.com/leontoddjohnson/datasets/mai
 if 'Pclass' in df.columns and 'pclass' not in df.columns:
     df['pclass'] = df['Pclass']
 
+
 def survival_demographics():
-    # Use the global df loaded in cell 2
+    '''
+    Function to summarize survival demographics based on grouping needs specified.
+
+    Parameters: none
+
+    Returns a DataFrame with survival statistics grouped by class, sex, and age group.
+    '''
+    # Use the global df loaded in at the top of this file
+    
+    # define age bins and labels
     age_bins = [0, 12, 19, 59, float('inf')]
     age_labels = ['Child', 'Teen', 'Adult', 'Senior']
     # create categorical age groups with explicit categories so groupby can include empty groups
@@ -44,7 +54,17 @@ def survival_demographics():
     return summary
 
 def visualize_demographic():
+    '''
+    Function to visualize survival demographics based on groupings and answer question posed.
+
+    Parameters: none
+
+    Returns a Plotly Figure object that visualizes survival statistics and answers 
+    if adult women in first class have a higher survival rate than any other demographic group.
+    '''
+    # Load in data
     summary_df = survival_demographics()
+
     # Highlight adult women in first class
     highlight = (
         (summary_df['pclass'] == 1) &
@@ -58,7 +78,7 @@ def visualize_demographic():
         x='age_group',
         y='survival_rate',
         color='sex',
-    facet_col='pclass',
+        facet_col='pclass',
         barmode='group',
         title='Survival Rate by Class, Sex, and Age Group',
         color_discrete_map={'male': 'steelblue', 'female': 'salmon'},
@@ -71,7 +91,14 @@ def visualize_demographic():
     return fig
 
 def family_groups():
-    # Use the global df loaded in cell 2
+    '''
+    Function to explore the relationship between family size, passenger class, and ticket fare.
+
+    Parameters: none
+
+    Returns a DataFrame grouped by family size and passenger class that displays the number of passengers, average fare, minimum fare, and maximum fare.
+    '''
+    # Use the global df loaded in at the top of this file
     
     # Calculate family size
     df['family_size'] = df['SibSp'] + df['Parch'] + 1
@@ -97,7 +124,14 @@ def family_groups():
     return summary
 
 def last_names():
-    # Use the global df loaded in cell 2
+    '''
+    Function to extracts the last name of each and returns the count for each last name.
+    
+    Parameters: none
+
+    Returns a DataFrame with last names and their counts.
+    '''
+    # Use the global df loaded in at the top of this file
 
     # Extract last names
     df['last_name'] = df['Name'].str.extract(r'^([^,]+),')[0]
@@ -108,7 +142,15 @@ def last_names():
     return last_name_counts
 
 def visualize_families():
-    # Get summary data
+    '''
+    Function to visualize family size based on groupings and answer question posed.
+
+    Parameters: none
+
+    Returns a Plotly visualization that answers the question if larger families in third class tend 
+    to pay lower fares per person compared to smaller families in first class?
+    '''
+    # Use the global df loaded in at the top of this file
     summary_df = family_groups()
 
     # Create scatter plot
