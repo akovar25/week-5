@@ -16,13 +16,14 @@ def survival_demographics():
     df['age_group'] = pd.cut(df['Age'], bins=age_bins, labels=age_labels, right=True)
     df['age_group'] = df['age_group'].astype(pd.CategoricalDtype(categories=age_labels, ordered=True))
 
-    # ensure pclass and Sex are categorical with expected categories so all combinations appear
-    # use the lowercase 'pclass' column which tests expect
+    # ensure pclass and sex are categorical with expected categories so all combinations appear
+    # use the lowercase 'pclass' and 'sex' columns which tests expect
     df['pclass'] = df['pclass'].astype(pd.CategoricalDtype(categories=[1, 2, 3], ordered=True))
-    df['Sex'] = df['Sex'].astype(pd.CategoricalDtype(categories=['male', 'female']))
+    # create a lowercase sex alias and set categorical dtype
+    df['sex'] = df['Sex'].astype(pd.CategoricalDtype(categories=['male', 'female']))
 
     # pass observed=False to include category combinations that have no members
-    grouped = df.groupby(['pclass', 'Sex', 'age_group'], observed=False)
+    grouped = df.groupby(['pclass', 'sex', 'age_group'], observed=False)
     summary = grouped.agg(
         n_passengers=('PassengerId', 'count'),
         n_survivors=('Survived', 'sum')
@@ -38,7 +39,8 @@ def survival_demographics():
         summary['n_survivors'] / summary['n_passengers'],
         0.0
     )
-    summary = summary.sort_values(by=['pclass', 'Sex', 'age_group']).reset_index(drop=True)
+    # sort using lowercase 'sex' column
+    summary = summary.sort_values(by=['pclass', 'sex', 'age_group']).reset_index(drop=True)
     return summary
 
 def visualize_demographic():
@@ -46,7 +48,7 @@ def visualize_demographic():
     # Highlight adult women in first class
     highlight = (
         (summary_df['pclass'] == 1) &
-        (summary_df['Sex'] == 'female') &
+        (summary_df['sex'] == 'female') &
         (summary_df['age_group'] == 'Adult')
     )
     summary_df['highlight'] = highlight
@@ -55,7 +57,7 @@ def visualize_demographic():
         summary_df,
         x='age_group',
         y='survival_rate',
-        color='Sex',
+        color='sex',
     facet_col='pclass',
         barmode='group',
         title='Survival Rate by Class, Sex, and Age Group',
