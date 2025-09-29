@@ -4,6 +4,9 @@ import numpy as np
 
 # update/add code below ...
 df = pd.read_csv('https://raw.githubusercontent.com/leontoddjohnson/datasets/main/data/titanic.csv')
+# provide a lowercase alias used by tests
+if 'Pclass' in df.columns and 'pclass' not in df.columns:
+    df['pclass'] = df['Pclass']
 
 def survival_demographics():
     # Use the global df loaded in cell 2
@@ -13,12 +16,13 @@ def survival_demographics():
     df['age_group'] = pd.cut(df['Age'], bins=age_bins, labels=age_labels, right=True)
     df['age_group'] = df['age_group'].astype(pd.CategoricalDtype(categories=age_labels, ordered=True))
 
-    # ensure Pclass and Sex are categorical with expected categories so all combinations appear
-    df['Pclass'] = df['Pclass'].astype(pd.CategoricalDtype(categories=[1, 2, 3], ordered=True))
+    # ensure pclass and Sex are categorical with expected categories so all combinations appear
+    # use the lowercase 'pclass' column which tests expect
+    df['pclass'] = df['pclass'].astype(pd.CategoricalDtype(categories=[1, 2, 3], ordered=True))
     df['Sex'] = df['Sex'].astype(pd.CategoricalDtype(categories=['male', 'female']))
 
     # pass observed=False to include category combinations that have no members
-    grouped = df.groupby(['Pclass', 'Sex', 'age_group'], observed=False)
+    grouped = df.groupby(['pclass', 'Sex', 'age_group'], observed=False)
     summary = grouped.agg(
         n_passengers=('PassengerId', 'count'),
         n_survivors=('Survived', 'sum')
@@ -34,14 +38,14 @@ def survival_demographics():
         summary['n_survivors'] / summary['n_passengers'],
         0.0
     )
-    summary = summary.sort_values(by=['Pclass', 'Sex', 'age_group']).reset_index(drop=True)
+    summary = summary.sort_values(by=['pclass', 'Sex', 'age_group']).reset_index(drop=True)
     return summary
 
 def visualize_demographic():
     summary_df = survival_demographics()
     # Highlight adult women in first class
     highlight = (
-        (summary_df['Pclass'] == 1) &
+        (summary_df['pclass'] == 1) &
         (summary_df['Sex'] == 'female') &
         (summary_df['age_group'] == 'Adult')
     )
@@ -52,7 +56,7 @@ def visualize_demographic():
         x='age_group',
         y='survival_rate',
         color='Sex',
-        facet_col='Pclass',
+    facet_col='pclass',
         barmode='group',
         title='Survival Rate by Class, Sex, and Age Group',
         color_discrete_map={'male': 'steelblue', 'female': 'salmon'},
@@ -71,7 +75,7 @@ def family_groups():
     df['family_size'] = df['SibSp'] + df['Parch'] + 1
 
     # Group by family size and class
-    grouped = df.groupby(['family_size', 'Pclass'])
+    grouped = df.groupby(['family_size', 'pclass'])
 
     # Aggregate statistics
     summary = grouped.agg(
@@ -82,7 +86,7 @@ def family_groups():
     ).reset_index()
 
     # Sort for readability
-    summary = summary.sort_values(by=['Pclass', 'family_size']).reset_index(drop=True)
+    summary = summary.sort_values(by=['pclass', 'family_size']).reset_index(drop=True)
 
     return summary
 
@@ -106,7 +110,7 @@ def visualize_families():
         summary_df,
         x='family_size',
         y='avg_fare',
-        color='Pclass',
+    color='pclass',
         size='n_passengers',
         title='Average Fare by Family Size and Class',
         labels={'family_size': 'Family Size', 'avg_fare': 'Average Fare'},
